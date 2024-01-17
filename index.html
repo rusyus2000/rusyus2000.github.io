@@ -65,7 +65,7 @@
 			  async: false,
 			  data: '{ "comment" }',
 			  beforeSend: function(xhr) { 
-				xhr.setRequestHeader("Authorization", "Basic " + btoa(cid + ":" + secret)); 
+				xhr.setRequestHeader("Authorization", "Basic " + btoa("hello:world")); 
 				},
 			  success: function (data){
 				returnVal =	data; 
