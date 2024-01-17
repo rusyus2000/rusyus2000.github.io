@@ -94,10 +94,11 @@
 	}
 	
 	function app_authenticate(){
+		var _url = "https://api.planningcenteronline.com/oauth/token?grant_type=authorization_code&code="+return_code+"&client_id:4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&client_secret="+code+"&redirect_uri=https://rusyus2000.github.io";
 		$.ajax
 			({
 			  type: "POST",
-			  url: "https://api.planningcenteronline.com/oauth/token?grant_type=authorization_code&code="+return_code+"&client_id:4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&client_secret="+code+"&redirect_uri=https://rusyus2000.github.io",
+			  url: _url,
 			  async: false,
 			  success: function (data){
 				returnVal =	data; 
