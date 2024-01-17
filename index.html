@@ -67,10 +67,10 @@
 				xhr.setRequestHeader("Authorization", "Bearer " + t_n); 
 				},
 			  success: function (data){
-				returnVal =	data; 
+				returnVal = data; 
 			  },
 			  error: function(response){
-				console.log("ajax:" + response);
+				console.log("ajax:" + response.statusText);
 			  }
 			});
 			return returnVal;
@@ -86,7 +86,7 @@
 				returnVal = data; 
 			  },
 			  error: function(response){
-				console.log("user_authenticate:" + response);
+				console.log("user_authenticate:" + response.statusText);
 			  }
 			});
 			return returnVal;
@@ -104,7 +104,7 @@
 				t_n=data.access_token; 
 			  },
 			  error: function(response){
-				console.log("app_authenticate:" + response);
+				console.log("app_authenticate:" + response.statusText);
 			  }
 			});
 	}
