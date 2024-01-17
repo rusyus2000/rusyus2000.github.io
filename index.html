@@ -18,22 +18,11 @@
 		return_code = urlParams.get('code');
 		
 		if (!t_n && !return_code)
-		{
 			window.location="https://api.planningcenteronline.com/oauth/authorize?client_id=4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&redirect_uri=https://rusyus2000.github.io&response_type=code&scope=calendar";
-		}
 		if(!t_n)
-		{
 			app_authenticate();
-		}
-		else
-		{
-			var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+date+"&where[ends_at]="+date)
-			//var multidayEvents = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[ends_at][gte]="+date+"&where[starts_at][lte]="+date)
-			generateCalendar(rooms, daySchedule);
-		}
-
-
 		
+				
 		var date = new Date().toLocaleDateString('en-CA');
 	
 		$( "#datepicker" ).datepicker({
@@ -44,6 +33,11 @@
 		})
 		
 		$("#datepicker").datepicker( "setDate" , new Date());
+
+		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+date+"&where[ends_at]="+date)
+		//var multidayEvents = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[ends_at][gte]="+date+"&where[starts_at][lte]="+date)
+		generateCalendar(rooms, daySchedule);
+		
 	});
 	
 	function RefreshCalendar()
@@ -70,22 +64,6 @@
 			  },
 			  error: function(response){
 				console.log("ajax:" + response.statusText);
-			  }
-			});
-			return returnVal;
-	}
-	
-	function user_authenticate(){
-		$.ajax
-			({
-			  type: "POST",
-			  url: "https://api.planningcenteronline.com/oauth/authorize?client_id=4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&redirect_uri=https://rusyus2000.github.io&response_type=code&scope=calendar",
-			  async: false,
-			  success: function (data){
-				returnVal = data; 
-			  },
-			  error: function(response){
-				console.log("user_authenticate:" + response.statusText);
 			  }
 			});
 			return returnVal;
