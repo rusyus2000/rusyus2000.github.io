@@ -8,7 +8,7 @@
 	 
 	<script>
 	var code="ea32b02c65e4fb51415063b77168f1c611137b77b5f445f6d85ac2a00834e893"
-	var rooms = ajax("https://api.planningcenteronline.com/calendar/v2/resources?filter=rooms&order=name");
+	var rooms;
 	var t_n;
 	var return_code;
 		
@@ -112,6 +112,12 @@
 	
 	function generateCalendar(roomsObj, scheduleObj)
 	{
+		if (!roomsObj){
+			rooms = ajax("https://api.planningcenteronline.com/calendar/v2/resources?filter=rooms&order=name");
+			roomsObj = rooms;
+		}
+			
+		
 		$("#divMain").empty();
 		
 		jQuery('<table >',{
