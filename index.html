@@ -50,7 +50,7 @@
 	}
 	
 	function ajax(url){
-		console.log("ajax call:" + response.statusText);
+		console.log("ajax call: " + url);
 		var returnVal;
 		$.ajax
 			({
@@ -65,7 +65,7 @@
 				returnVal = data; 
 			  },
 			  error: function(response){
-				console.log("ajax error:" + response.statusText);
+				console.log("ajax error: " + response.statusText);
 			  }
 			});
 			return returnVal;
@@ -79,11 +79,11 @@
 			  url: _url,
 			  async: false,
 			  success: function (data){
-				console.log("token: "+data.access_token);
+				//console.log("token: "+data.access_token);
 				t_n=data.access_token; 
 			  },
 			  error: function(response){
-				console.log("app_authenticate:" + response.statusText);
+				console.log("app_authenticate error: " + response.statusText);
 			  }
 			});
 	}
