@@ -25,6 +25,12 @@
 		{
 			app_authenticate();
 		}
+		else
+		{
+			var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+date+"&where[ends_at]="+date)
+			//var multidayEvents = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[ends_at][gte]="+date+"&where[starts_at][lte]="+date)
+			generateCalendar(rooms, daySchedule);
+		}
 
 
 		
@@ -38,15 +44,6 @@
 		})
 		
 		$("#datepicker").datepicker( "setDate" , new Date());
-		
-		//var token = ()
-		
-		
-		
-		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+date+"&where[ends_at]="+date)
-		//var multidayEvents = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[ends_at][gte]="+date+"&where[starts_at][lte]="+date)
-		generateCalendar(rooms, daySchedule);
-		
 	});
 	
 	function RefreshCalendar()
@@ -67,7 +64,7 @@
 			  async: false,
 			  data: '{ "comment" }',
 			  beforeSend: function(xhr) { 
-				xhr.setRequestHeader("Authorization", "Basic " + btoa("hello:world")); 
+				xhr.setRequestHeader("Authorization", "Bearer " + t_n); 
 				},
 			  success: function (data){
 				returnVal =	data; 
@@ -103,7 +100,7 @@
 			  url: _url,
 			  async: false,
 			  success: function (data){
-				returnVal =	data; 
+				t_n=data.access_token; 
 			  },
 			  error: function(response){
 				alert(response);
