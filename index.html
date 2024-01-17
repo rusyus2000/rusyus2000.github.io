@@ -77,7 +77,7 @@
 			  url: _url,
 			  async: false,
 			  success: function (data){
-				alert(data.access_token);
+				console.log("token: "+data.access_token);
 				t_n=data.access_token; 
 			  },
 			  error: function(response){
