@@ -173,9 +173,10 @@
 			{	
 				var tdId = '#'+ t + '-' + scheduleObj.data[i].relationships.resource.data.id;
 				
-				if (t==endTimeHours)
+				if (t==endTimeHours){
 					if (endTimeMinutes != 0)
 						MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id);
+				}
 				else
 					MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id);
 			}
