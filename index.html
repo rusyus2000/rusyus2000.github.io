@@ -190,7 +190,7 @@
 	function MarkTimeSlot(tdId, eventId)
 	{
 		$(tdId).css("background-color","pink");
-		$(tdId).attr("event-id",eId);
+		$(tdId).attr("event-id",eventId);
 		eventIds.indexOf(eventId) === -1 ? eventIds.push(eventId) : console.log(eventId +" already exists in array"); 
 	}
 	function SetDate(dayIncrement)
