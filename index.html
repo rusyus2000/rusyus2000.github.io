@@ -14,6 +14,10 @@
 	var eventIds = [];
 		
 	$(function(){ 
+		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
+		if (performance.navigation.type == performance.navigation.TYPE_RELOAD)
+			window.location = location.hostname;
+		
 		const queryString = window.location.search;
 		const urlParams = new URLSearchParams(queryString);
 		return_code = urlParams.get('code');
