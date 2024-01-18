@@ -11,6 +11,7 @@
 	var rooms;
 	var t_n;
 	var return_code;
+	var eventIds = [];
 		
 	$(function(){ 
 		const queryString = window.location.search;
@@ -42,6 +43,7 @@
 	
 	function RefreshCalendar()
 	{
+		eventIds = [];
 		var dateStr = $("#datepicker").val()
 		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
 		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+dateOnly+"&where[ends_at]="+dateOnly)
@@ -158,7 +160,7 @@
 		})
 		
 			
-		//this loop goes through all scheduled resources for given date
+		//this loop goes through all scheduled resources for given date and highlights them on calendar
 		$.each(scheduleObj.data,function(i){
 			var startTime = new Date(scheduleObj.data[i].attributes.starts_at).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'});
 			var startTimeHours = new Date(startTime).getHours();			
@@ -171,17 +173,26 @@
 			{	
 				var tdId = '#'+ t + '-' + scheduleObj.data[i].relationships.resource.data.id;
 				
-				if (t==endTimeHours){
+				if (t==endTimeHours)
 					if (endTimeMinutes != 0)
-						$(tdId).css("background-color","pink");
-				}
+						MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id);
 				else
-					$(tdId).css("background-color","pink");
+					MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id);
 			}
 			
 		});
+
+		//this loop gets details for each event
+		$.each(eventIds,function(eId){
+		});
 	}
-	
+
+	function MarkTimeSlot(tdId, eventId)
+	{
+		$(tdId).css("background-color","pink");
+		$(tdId).attr("event-id",eId);
+		eventIds.indexOf(eventId) === -1 ? eventIds.push(eventId) : console.log(eventId +" already exists in array"); 
+	}
 	function SetDate(dayIncrement)
 	{
 		var dateStr = $("#datepicker").val()
