@@ -189,7 +189,7 @@
 		});
 
 		//this loop gets details for each event
-		$.each(eventIds,function(eId){
+		$.each(eventIds,function(i,eId){
 			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner');
 			eventInfo[eId]={ownerName:event.included.attributes.first_name + ' ' + event.included.attributes.last_name};
 		});
