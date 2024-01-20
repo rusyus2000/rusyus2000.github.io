@@ -45,7 +45,15 @@
 		generateCalendar(rooms, daySchedule);
 		
 	});
-	
+	$.ready(function(){
+		//this loop gets details for each event after page is loaded
+		$.each(eventIds,function(i,eId){
+			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner');
+			eventInfo[eId]={eventName:event.data.attributes.name,ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
+		});
+	});
+
+		
 	function RefreshCalendar()
 	{
 		eventIds = [];
@@ -186,12 +194,6 @@
 					MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
 			}
 			
-		});
-
-		//this loop gets details for each event
-		$.each(eventIds,function(i,eId){
-			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner');
-			eventInfo[eId]={eventName:event.data.attributes.name,ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
 		});
 	}
 
