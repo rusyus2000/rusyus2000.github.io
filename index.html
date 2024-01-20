@@ -214,7 +214,7 @@
 	  return result;
 	}
 	function ShowInfo(parentElement) {
-	        var position = parentElement.position();
+	        var position = $(parentElement).position();
                 $('#divInfo').css({ top: position.top - window.scrollY, left: position.left + 24 }).show()
         }
 	</script>
