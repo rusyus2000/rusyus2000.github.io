@@ -197,7 +197,7 @@
 	{
 		$(tdId).css("background-color","pink");
 		$(tdId).attr("event-id",eventId);
-		$(tdId).attr("onMouseOver","ShowInfo(this)");
+		$(tdId).attr("onMouseEnter","ShowInfo(this)");
 		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
 		$(tdId).attr("onClick","window.open('https://calendar.planningcenteronline.com/events/"+eventId+"?event_instance_id="+eventInstanceId+"', '_blank').focus();");
 		eventIds.indexOf(eventId) === -1 ? eventIds.push(eventId) : console.log(eventId +" already exists in array"); 
@@ -217,7 +217,7 @@
 	}
 	function ShowInfo(parentElement) {
 	        var position = $(parentElement).offset();
-                $('#divInfo').css({ top: position.top - 55, left: position.left }).show()
+                $('#divInfo').css({ top: position.top - 55 - window.sctollY, left: position.left }).show()
         }
 	</script>
 </head>
