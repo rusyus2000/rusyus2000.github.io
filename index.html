@@ -55,9 +55,15 @@
 	{
 		//this loop gets details for each event after page is loaded
 		$.each(eventIds,function(i,eId){
-			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner');
-			eventInfo[eId]={eventName:event.data.attributes.name,ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
+			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner',true,AddEvent);
+			//eventInfo[eId]={eventName:event.data.attributes.name,ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
 		});
+	}
+	function AddEvent(event)
+	{
+		eventInfo[event.data.id]={eventName:event.data.attributes.name,
+					  ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,
+					  phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
 	}
 	function RefreshCalendar()
 	{
@@ -66,14 +72,14 @@
 		eventIds = [];
 		var dateStr = $("#datepicker").val()
 		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
-		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+dateOnly+"&where[ends_at]="+dateOnly)
+		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+dateOnly+"&where[ends_at]="+dateOnly,false,null)
 		generateCalendar(rooms, daySchedule);
 		LoadDetails();
 		
 		$("#divMain").LoadingOverlay("hide", true);
 	}
 	
-	function ajax(url){
+	function ajax(url,isAsync,callbackFunction){
 		console.log("ajax call: " + url);
 		var returnVal;
 		$.ajax
@@ -81,12 +87,14 @@
 			  type: "GET",
 			  url: url,
 			  dataType: 'json',
-			  async: false,
+			  async: isAsync,
 			  beforeSend: function(xhr) { 
 				xhr.setRequestHeader("Authorization", "Bearer " + t_n); 
 				},
 			  success: function (data){
-				returnVal = data; 
+				returnVal = data;
+				if(callbackFunction)
+					callbackFunction(data);
 			  },
 			  error: function(response){
 				console.log("ajax error: " + response.statusText);
@@ -103,7 +111,6 @@
 			  url: _url,
 			  async: false,
 			  success: function (data){
-				//console.log("token: "+data.access_token);
 				t_n=data.access_token; 
 			  },
 			  error: function(response){
@@ -117,7 +124,7 @@
 	{
 
 		if (!roomsObj){
-			rooms = ajax("https://api.planningcenteronline.com/calendar/v2/resources?filter=rooms&order=name");
+			rooms = ajax("https://api.planningcenteronline.com/calendar/v2/resources?filter=rooms&order=name",false,null);
 			roomsObj = rooms;
 		}
 			
