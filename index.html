@@ -225,10 +225,6 @@
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).css("cursor","pointer");
-		$(tdId).hover(function(){
-				$(tdId).css('border','1px solid black');
-			});
-			
 		$(tdId).attr("event-id",eventId);
 		$(tdId).attr("onMouseOver","ShowInfo(this)");
 		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
