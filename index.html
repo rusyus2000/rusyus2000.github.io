@@ -226,7 +226,7 @@
 			var prevTdId = '#'+ (time-1) + '-' + resourceId;
 			var prevEventId=$(prevTdId).attr("event-id");
 			if (prevEventId && prevEventId != eventId)
-				busyColor = (busyColor=='pink'?'salmon':'pink');
+				busyColor = (busyColor=='pink'?'thistle':'pink');
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).attr("event-id",eventId);
