@@ -15,6 +15,7 @@
 	var return_code;
 	var eventIds = [];
 	var eventInfo = {};
+	var busyColor = 'pink';
 		
 	$(function(){ 
 		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
@@ -193,6 +194,8 @@
 			
 		//this loop goes through all scheduled resources for given date and highlights them on calendar
 		$.each(scheduleObj.data,function(i){
+			var currEventId;
+			var currentColor;
 			var startTime = new Date(scheduleObj.data[i].attributes.starts_at).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'});
 			var startTimeHours = new Date(startTime).getHours();			
 			var endTime = new Date(scheduleObj.data[i].attributes.ends_at).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'});
@@ -202,23 +205,30 @@
 			//this loop marks needed cells as not available
 			for (let t=startTimeHours;t<=endTimeHours;t++)
 			{	
-				var tdId = '#'+ t + '-' + scheduleObj.data[i].relationships.resource.data.id;
 				
 				if (t==endTimeHours){
 					if (endTimeMinutes != 0)
-						MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
+						MarkTimeSlot(t,scheduleObj.data[i].relationships.resource.data.id,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
 				}
 				else
-					MarkTimeSlot(tdId,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
+					MarkTimeSlot(t,scheduleObj.data[i].relationships.resource.data.id,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
 			}
 			
 		});
 
 	}
 
-	function MarkTimeSlot(tdId, eventId,eventInstanceId)
+	function MarkTimeSlot(time,resourceId, eventId,eventInstanceId)
 	{
-		$(tdId).css("background-color","pink");
+		var tdId = '#'+ time + '-' + resourceId;
+		//find previous cell and see if event id exists and is different, if different - change color
+		if (time>7){
+			var prevTdId = '#'+ (time-1) + '-' + resourceId;
+			var prevEventId=$(prevTdId).attr("event-id");
+			if (prevEventId && prevEventId != eventId)
+				busyColor = (busyColor=='pink'?'salmon':'pink');
+		}
+		$(tdId).css("background-color",busyColor);
 		$(tdId).attr("event-id",eventId);
 		$(tdId).attr("onMouseOver","ShowInfo(this)");
 		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
