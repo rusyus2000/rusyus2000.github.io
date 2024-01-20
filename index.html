@@ -15,7 +15,7 @@
 	var return_code;
 	var eventIds = [];
 	var eventInfo = {};
-	var busyColor = 'rgb(252, 225, 220)';
+	var busyColor = 'rgba(252, 225, 220, 0.9)';
 		
 	$(function(){ 
 		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
@@ -220,12 +220,16 @@
 			var prevEventId=$(prevTdId).attr("event-id");
 			if (prevEventId && prevEventId != eventId){
 				var prevColor = $(prevTdId).css("background-color");
-				busyColor = (prevColor=='rgb(252, 225, 220)'?'rgb(252, 237, 220)':'rgb(252, 225, 220)');
+				busyColor = (prevColor=='rgba(252, 225, 220, 0.9)'?'rgba(252, 237, 220, 0.9)':'rgba(252, 225, 220, 0.9)');
 			}
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).css("cursor","pointer");
-		$(tdId).hover(function(){$(tdId).css("opacity","90%")});
+		$(tdId).hover(function(){
+				var bg = $(tdId).css('background-color');
+				var bgDarker = bg.replace('0.9', '1.0');
+				$(tdId).css('background-color',bgDarker);
+			});
 			
 		$(tdId).attr("event-id",eventId);
 		$(tdId).attr("onMouseOver","ShowInfo(this)");
