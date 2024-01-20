@@ -197,7 +197,7 @@
 	{
 		$(tdId).css("background-color","pink");
 		$(tdId).attr("event-id",eventId);
-		$(tdId).attr("onMouseOver","ShowInfo('"+eventId+"')");
+		$(tdId).attr("onMouseOver","ShowInfo(this)");
 		eventIds.indexOf(eventId) === -1 ? eventIds.push(eventId) : console.log(eventId +" already exists in array"); 
 	}
 	function SetDate(dayIncrement)
@@ -213,8 +213,8 @@
 	  result.setDate(result.getDate() + days);
 	  return result;
 	}
-	function ShowInfo(eventId) {
-	        var position = $('td[event-id="' + eventId + '"]').position();
+	function ShowInfo(parentElement) {
+	        var position = parentElement.position();
                 $('#divInfo').css({ top: position.top - window.scrollY, left: position.left + 24 }).show()
         }
 	</script>
