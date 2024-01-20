@@ -198,6 +198,7 @@
 		$(tdId).css("background-color","pink");
 		$(tdId).attr("event-id",eventId);
 		$(tdId).attr("onMouseOver","ShowInfo(this)");
+		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
 		eventIds.indexOf(eventId) === -1 ? eventIds.push(eventId) : console.log(eventId +" already exists in array"); 
 	}
 	function SetDate(dayIncrement)
