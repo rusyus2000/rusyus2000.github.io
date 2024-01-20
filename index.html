@@ -218,7 +218,8 @@
 	function ShowInfo(parentElement) {
 		if ($('#divInfo').is(":hidden")){
 	        	var position = $(parentElement).offset();
-	        	$('#divInfo').css({ top: position.top - 55, left: position.left }).show()
+			var _top = position.top - 55 - window.scrollY;
+	        	$('#divInfo').css({ top: _top, left: position.left }).show()
 		}
         }
 	</script>
