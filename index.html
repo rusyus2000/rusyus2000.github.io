@@ -226,9 +226,7 @@
 		$(tdId).css("background-color",busyColor);
 		$(tdId).css("cursor","pointer");
 		$(tdId).hover(function(){
-				var bg = $(tdId).css('background-color');
-				var bgDarker = bg.replace('0.9', '1.0');
-				$(tdId).css('background-color',bgDarker);
+				$(tdId).css('border','1px solid black');
 			});
 			
 		$(tdId).attr("event-id",eventId);
