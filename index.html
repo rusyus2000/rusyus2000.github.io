@@ -218,8 +218,10 @@
 		if (time>7){
 			var prevTdId = '#'+ (time-1) + '-' + resourceId;
 			var prevEventId=$(prevTdId).attr("event-id");
-			if (prevEventId && prevEventId != eventId)
-				busyColor = (busyColor=='#fce1dc'?'#fceddc':'#fce1dc');
+			if (prevEventId && prevEventId != eventId){
+				var prevColor = $(prevTdId).css("background-color");
+				busyColor = (prevColor=='#fce1dc'?'#fceddc':'#fce1dc');
+			}
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).attr("event-id",eventId);
