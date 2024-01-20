@@ -15,7 +15,7 @@
 	var return_code;
 	var eventIds = [];
 	var eventInfo = {};
-	var busyColor = '#edd5d5';
+	var busyColor = '#fce1dc';
 		
 	$(function(){ 
 		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
@@ -219,7 +219,7 @@
 			var prevTdId = '#'+ (time-1) + '-' + resourceId;
 			var prevEventId=$(prevTdId).attr("event-id");
 			if (prevEventId && prevEventId != eventId)
-				busyColor = (busyColor=='#edd5d5'?'#edd9d5':'#edd5d5');
+				busyColor = (busyColor=='#fce1dc'?'#fceddc':'#fce1dc');
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).attr("event-id",eventId);
