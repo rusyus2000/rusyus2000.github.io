@@ -219,6 +219,11 @@
 	}
 	function ShowInfo(parentElement) {
 		if ($('#divInfo').is(":hidden")){
+			//Populate div
+			var eId = $(parentElement).attr("event-id");
+			$('#divEventName').html(eventInfo[eId].eventName);
+			$('#divContactName').html(eventInfo[eId].ownerName + ' - ' + eventInfo[eId].phone);
+			//position and display div
 	        	var position = $(parentElement).offset();
 			var _top = position.top - 55 - window.scrollY;
 	        	$('#divInfo').css({ top: _top, left: position.left }).show()
@@ -248,8 +253,8 @@
 	
 </div>
 	<div id="divInfo" style="border:1px solid #555;border-radius:3px;width:fit-content;background-color:#eee;padding:5px;font-size:0.8em;display:none;position:fixed">
-		<div name="divEventName" style="font-weight:bold">Event Name</div>
-		<div name="divContactName">John Doe - 916-333-2222</div>
+		<div id="divEventName" style="font-weight:bold">Event Name</div>
+		<div id="divContactName">John Doe - 916-333-2222</div>
 	</div>
 
 </body>
