@@ -43,21 +43,14 @@
 		$("#datepicker").datepicker( "setDate" , new Date());
 
 		RefreshCalendar();
-		//var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+date+"&where[ends_at]="+date)
-		//var multidayEvents = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[ends_at][gte]="+date+"&where[starts_at][lte]="+date)
-		//generateCalendar(rooms, daySchedule);
 		
 	});
-	//$(window).on('load',function(){
-	//	LoadDetails();
-	//});
 
 	function LoadDetails()
 	{
 		//this loop gets details for each event after page is loaded
 		$.each(eventIds,function(i,eId){
 			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner',true,AddEvent);
-			//eventInfo[eId]={eventName:event.data.attributes.name,ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
 		});
 	}
 	function AddEvent(event)
@@ -73,7 +66,7 @@
 		eventIds = [];
 		var dateStr = $("#datepicker").val()
 		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
-		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+dateOnly+"&where[ends_at]="+dateOnly,false,null)
+		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?where[starts_at]="+dateOnly+"&where[ends_at]="+dateOnly+"?order=starts_at",false,null)
 		generateCalendar(rooms, daySchedule);
 		LoadDetails();
 		
