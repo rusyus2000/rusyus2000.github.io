@@ -12,6 +12,7 @@
 	var t_n;
 	var return_code;
 	var eventIds = [];
+	var eventInfo = {};
 		
 	$(function(){ 
 		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
@@ -189,7 +190,8 @@
 
 		//this loop gets details for each event
 		$.each(eventIds,function(eId){
-			
+			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner');
+			eventInfo[eId]={ownerName:event.included.attributes.first_name + ' ' + event.included.attributes.last_name};
 		});
 	}
 
