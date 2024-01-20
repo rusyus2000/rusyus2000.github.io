@@ -225,7 +225,8 @@
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).css("cursor","pointer");
-		$(tdId).mouseover(function(){$(tdId).css("filter","brightness(95%)")}).mouseout($(tdId).css("filter","brightness(100%)")});
+		$(tdId).mouseover(function(){$(tdId).css("filter","brightness(95%)")})
+			.mouseout(function(){$(tdId).css("filter","brightness(100%)")});
 		$(tdId).attr("event-id",eventId);
 		$(tdId).attr("onMouseOver","ShowInfo(this)");
 		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
