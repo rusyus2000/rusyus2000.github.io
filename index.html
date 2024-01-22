@@ -42,6 +42,14 @@
 		})
 		$("#datepicker").datepicker( "setDate" , new Date());
 
+		$("#externalLink").click(function(){
+			var newWindow = window.open("https://calendar.planningcenteronline.com/");
+			newWindow.onload = function() {
+    					$(newWindow.document.body).find("button[data-pendo='new-event-button']").click();
+				}
+		});
+
+		
 		RefreshCalendar();
 		
 	});
@@ -283,6 +291,6 @@
 		<div id="divEventName" style="font-weight:bold">Event Name</div>
 		<div id="divContactName">John Doe - 916-333-2222</div>
 	</div>
-
+<a href="#" id="externalLink">Edit</a>
 </body>
 </html>
