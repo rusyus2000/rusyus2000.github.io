@@ -113,6 +113,13 @@
             });
             document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
         }
+
+        function resetAll(){
+            var tObj = document.getElementsByTagName('input');
+            for(var i = 0; i < tObj.length; i++){
+                tObj[i].value='0';
+            }
+        }
     </script>
 </head>
 <body>
@@ -121,7 +128,7 @@
         <table id="productTable" class="table">
             <thead class="thead-light">
                 <tr>
-                    <th colspan="2">Product</th>
+                    <th>Product</th>
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Total</th>
@@ -130,8 +137,16 @@
             <tbody id="productTableBody">
                 <!-- Products will be loaded here -->
             </tbody>
+            <tfoot>
+                <tr>
+                    <th><input type="button" onclick="resetAll();return false;" text="Reset"/></th>
+                    <th colspan="3">
+                         <h2 class="text-right">Total: <span id="grandTotal">0.00</span></h2>
+                    </th>
+                </tr>
+            </tfoot>
         </table>
-        <h2 class="text-right">Total: <span id="grandTotal">0.00</span></h2>
+       
     </div>
     
 </body>
