@@ -4,7 +4,7 @@
 <head>
     <title>Kitchen Business Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css" integrity="sha384-BY+fdrpOd3gfeRvTSMT+VUZmA728cfF9Z2G42xpaRkUGu2i3DyzpTURDo5A6CaLK" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.1.1/css/all.min.css" integrity="sha512-ioRJH7yXnyX+7fXTQEKPULWkMn3CqMcapK0NNtCN8q//sW7ZeVFcbMJ9RvX99TwDg6P8rAH2IqUSt2TLab4Xmw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
             background-color: #f7f7f7;
@@ -45,13 +45,13 @@
         });
         function AddOne(element){
             var input = element.previousElementSibling;
-            input.value = input.value + 1; 
+            input.value = parseInt(input.value) + 1; 
         }
         
         function SubOne(element){
             var input = element.nextElementSibling;
-            if (input.value > 1)
-                input.value = input.value - 1; 
+            if (parseInt(input.value) > 1)
+                input.value = parseInt(input.value) - 1; 
         }
         
         function createProductTable(data) {
@@ -75,7 +75,7 @@
                     priceCell.innerText = product.price.toFixed(2);
 
                     let quantityCell = row.insertCell();
-                    quantityCell.innerHTML = `<i class="fa-regular fa-square-minus" onclick="SubOne(this)"></i><input type="number" value="0" min="0" class="form-control" onchange="calculateRowTotal(this)"><i class="fa-regular fa-square-plus" onclick="AddOne(this)"></i>`;
+                    quantityCell.innerHTML = `<i class="fas fa-minus-circle" onclick="SubOne(this)"></i><input type="number" value="0" min="0" class="form-control" onchange="calculateRowTotal(this)"><i class="fas fa-plus-circle" onclick="AddOne(this)"></i>`;
 
                     let totalCell = row.insertCell();
                     totalCell.classList.add('row-total');
