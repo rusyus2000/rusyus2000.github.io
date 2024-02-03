@@ -85,7 +85,7 @@
         }
 
          function calculateRowTotal(element) {
-            var row = element.parentNode.parentNode;
+            var row = element.parentNode.parentNode.parentNode;
             var price = parseFloat(row.cells[1].innerText);
             var quantity = parseFloat(row.cells[2].getElementsByTagName('input')[0].value);
             var total = price * quantity;
