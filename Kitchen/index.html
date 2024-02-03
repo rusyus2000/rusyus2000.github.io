@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kitchen Business Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f7f7f7;
+        }
+        #calculatorContainer {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .quantity-input {
+            width: 100px;
+        }
+        .category-row {
+            background-color: #6c757d;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+        .row-total {
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Replace 'path/to/your/products.json' with the actual path to your JSON file
+            fetch('products.json')
+            .then(response => response.json())
+            .then(data => createProductTable(data))
+            .catch(error => console.error('Error:', error));
+        });
+
+        function createProductTable(data) {
+            let tableBody = document.getElementById('productTableBody');
+            data.categories.forEach(category => {
+                // Create category row
+                let catRow = tableBody.insertRow();
+                let catCell = catRow.insertCell();
+                catCell.setAttribute('colspan', 5);
+                catCell.innerText = category.name;
+                catRow.classList.add('category-row');
+
+                // Create product rows
+                category.products.forEach(product => {
+                    let row = tableBody.insertRow();
+                    let productCell = row.insertCell();
+                    productCell.setAttribute('colspan', 2);
+                    productCell.innerText = product.name;
+
+                    let priceCell = row.insertCell();
+                    priceCell.innerText = product.price.toFixed(2);
+
+                    let quantityCell = row.insertCell();
+                    quantityCell.innerHTML = `<input type="number" value="0" min="0" class="form-control quantity-input" onchange="calculateRowTotal(this)">`;
+
+                    let totalCell = row.insertCell();
+                    totalCell.classList.add('row-total');
+                    totalCell.innerText = '0.00';
+                });
+            });
+        }
+
+         function calculateRowTotal(element) {
+            var row = element.parentNode.parentNode;
+            var price = parseFloat(row.cells[1].innerText);
+            var quantity = parseFloat(row.cells[2].getElementsByTagName('input')[0].value);
+            var total = price * quantity;
+            row.cells[3].innerText = total.toFixed(2);
+
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            var grandTotal = 0;
+            var rows = document.querySelectorAll('#productTable tbody tr:not(.category-row)');
+            rows.forEach(function (row) {
+                var rowTotal = parseFloat(row.cells[3].innerText);
+                if (!isNaN(rowTotal)) {
+                    grandTotal += rowTotal;
+                }
+            });
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        }
+    </script>
+</head>
+<body>
+    <div id="calculatorContainer">
+        <h2 class="text-center">Kitchen Business Calculator</h2>
+        <table id="productTable" class="table">
+            <thead class="thead-light">
+                <tr>
+                    <th colspan="2">Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                <!-- Products will be loaded here -->
+            </tbody>
+        </table>
+        <h3 class="text-right">Total: <span id="grandTotal">0.00</span></h3>
+    </div>
+    
+</body>
+</html>
