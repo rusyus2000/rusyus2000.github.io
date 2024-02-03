@@ -34,7 +34,10 @@
             vertical-align: middle;
             padding: 0.25em;
         }
-        input {font-weight:bold !important;}
+        input {
+            font-weight:bold !important;
+            font-size:3em
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -78,7 +81,7 @@
                     priceCell.innerText = product.price.toFixed(2);
 
                     let quantityCell = row.insertCell();
-                    quantityCell.innerHTML = `<div class="row"><i class="far fa-minus-square pt-1 pr-1" style="font-size:1.9em" onclick="SubOne(this)"></i><input type="number" value="0" min="0" class="form-control" style="width:65px" onchange="calculateRowTotal(this)"><i class="far fa-plus-square pt-1 pl-1" style="font-size:1.9em" onclick="AddOne(this)"></i></div>`;
+                    quantityCell.innerHTML = `<div class="row"><i class="far fa-minus-square pt-1 pr-1" style="font-size:65px" onclick="SubOne(this)"></i><input type="number" value="0" min="0" class="form-control" style="width:80px;height:70" onchange="calculateRowTotal(this)"><i class="far fa-plus-square pt-1 pl-1" style="font-size:65px" onclick="AddOne(this)"></i></div>`;
 
                     let totalCell = row.insertCell();
                     totalCell.classList.add('row-total');
