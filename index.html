@@ -1,296 +1,118 @@
+
+<!DOCTYPE html>
 <html>
 <head>
-	<title>Bryte Church - Room Schedule</title>
-	<script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity3="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-	<link href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css' rel='stylesheet'>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
-
-	
-	<script>
-	var rooms;
-	var t_n;
-	var return_code;
-	var eventIds = [];
-	var eventInfo = {};
-	var busyColor = 'rgba(252, 225, 220, 0.9)';
-		
-	$(function(){ 
-		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
-		if (performance.navigation.type == performance.navigation.TYPE_RELOAD)
-			window.location = location.hostname;
-		
-		const queryString = window.location.search;
-		const urlParams = new URLSearchParams(queryString);
-		return_code = urlParams.get('code');
-		
-		if (!t_n && !return_code)
-			window.location="https://api.planningcenteronline.com/oauth/authorize?client_id=4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&redirect_uri=https://rusyus2000.github.io&response_type=code&scope=calendar";
-		if(!t_n)
-			app_authenticate();
-		
-				
-		//var date = new Date().toLocaleDateString('en-CA');
-	
-		$( "#datepicker" ).datepicker({
-			dateFormat: 'yy-mm-dd, DD',
-		})
-		.on("change",function(){
-			RefreshCalendar();
-		})
-		$("#datepicker").datepicker( "setDate" , new Date());
-
-		$("#externalLink").click(function(){
-			var newWindow = window.open("https://calendar.planningcenteronline.com/");
-			newWindow.onload = function() {
-    					$(newWindow.document.body).find("button[data-pendo='new-event-button']").click();
-				}
-		});
-
-		
-		RefreshCalendar();
-		
-	});
-
-	function LoadDetails()
-	{
-		//this loop gets details for each event after page is loaded
-		$.each(eventIds,function(i,eId){
-			var event = ajax('https://api.planningcenteronline.com/calendar/v2/events/'+eId+'?include=owner',true,AddEvent);
-		});
-	}
-	function AddEvent(event)
-	{
-		eventInfo[event.data.id]={eventName:event.data.attributes.name,
-					  ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,
-					  phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
-	}
-	function RefreshCalendar()
-	{
-		$("#divMain").LoadingOverlay("show", true);
-		
-		eventIds = [];
-		var dateStr = $("#datepicker").val()
-		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
-		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?order=starts_at&where[starts_at]="+dateOnly+"&where[ends_at]="+dateOnly,false,null)
-		generateCalendar(rooms, daySchedule);
-		LoadDetails();
-		
-		$("#divMain").LoadingOverlay("hide", true);
-	}
-	
-	function ajax(url,isAsync,callbackFunction){
-		console.log("ajax call: " + url);
-		var returnVal;
-		$.ajax
-			({
-			  type: "GET",
-			  url: url,
-			  dataType: 'json',
-			  async: isAsync,
-			  beforeSend: function(xhr) { 
-				xhr.setRequestHeader("Authorization", "Bearer " + t_n); 
-				},
-			  success: function (data){
-				returnVal = data;
-				if(callbackFunction)
-					callbackFunction(data);
-			  },
-			  error: function(response){
-				console.log("ajax error: " + response.statusText);
-			  }
-			});
-			return returnVal;
-	}
-	
-	function app_authenticate(){
-		var _url = "https://api.planningcenteronline.com/oauth/token?grant_type=authorization_code&code="+return_code+"&client_id=4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&client_secret=ea32b02c65e4fb51415063b77168f1c611137b77b5f445f6d85ac2a00834e893&redirect_uri=https://rusyus2000.github.io";
-		$.ajax
-			({
-			  type: "POST",
-			  url: _url,
-			  async: false,
-			  success: function (data){
-				t_n=data.access_token; 
-			  },
-			  error: function(response){
-				console.log("app_authenticate error: " + response.statusText);
-			  }
-			});
-	}
-	
-	
-	function generateCalendar(roomsObj, scheduleObj)
-	{
-
-		if (!roomsObj){
-			rooms = ajax("https://api.planningcenteronline.com/calendar/v2/resources?filter=rooms&order=name",false,null);
-			roomsObj = rooms;
-		}
-			
-		
-		$("#divMain").empty();
-		
-		jQuery('<table >',{
-			id: "tblCalendar",
-			style: "margin:auto"
-		}).appendTo("#divMain");
-		
-		//first row
-		var th = jQuery('<tr>');
-		th.appendTo("#tblCalendar");
-		for (let i=6; i<=22; i++)
-		{
-			if (i==6){
-					var blanktd = jQuery('<td>');
-					blanktd.appendTo(th);
-			}
-			else
-			{
-				var timetd = jQuery('<td class="fw-bold">');
-				timetd.append('&nbsp;'+(i<=12?i:i-12)+(i<12?"am":"pm")+'&nbsp;');
-				timetd.appendTo(th);
-			}
-		
-		}
-		
-		//this loop creates layout
-		$.each(roomsObj.data, function(j){
-		
-			//add separators
-			if (roomsObj.data[j].id == 464259 
-				|| roomsObj.data[j].id == 464821
-				|| roomsObj.data[j].id == 464240)
-			{
-				var tr = jQuery('<tr id="trSeparator'+roomsObj.data[j].id+'" style="background-color:#ddd">');
-				tr.appendTo("#tblCalendar");	
-				var td=jQuery('<td>',{colspan:'17',style:'border:1px solid #ccc'});
-				td.appendTo(tr);
-			}
-			
-			var tr = jQuery('<tr id="tr'+roomsObj.data[j].id+'" onMouseOver="$(this).css(\'background-color\',\'#e9f2f2\')" onMouseOut="$(this).css(\'background-color\',\'#FFF\')">');
-			tr.appendTo("#tblCalendar");
-			
-			
-		
-			for (let i=6; i<=22; i++)
-			{
-				if (i==6){
-					var td = jQuery('<td class="fw-bold">');
-					td.append(roomsObj.data[j].attributes.name);
-					td.appendTo(tr);
-				}
-				else{
-					var td = jQuery('<td>',{
-						style:'border:1px solid #ccc',
-						id:i+'-'+roomsObj.data[j].id
-						});
-					td.appendTo(tr);
-				}
-			}
-		})
-		
-			
-		//this loop goes through all scheduled resources for given date and highlights them on calendar
-		$.each(scheduleObj.data,function(i){
-			var currEventId;
-			var currentColor;
-			var startTime = new Date(scheduleObj.data[i].attributes.starts_at).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'});
-			var startTimeHours = new Date(startTime).getHours();			
-			var endTime = new Date(scheduleObj.data[i].attributes.ends_at).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'});
-			var endTimeHours = new Date(endTime).getHours();
-			var endTimeMinutes = new Date(endTime).getMinutes();
-										
-			//this loop marks needed cells as not available
-			for (let t=startTimeHours;t<=endTimeHours;t++)
-			{	
-				
-				if (t==endTimeHours){
-					if (endTimeMinutes != 0)
-						MarkTimeSlot(t,scheduleObj.data[i].relationships.resource.data.id,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
-				}
-				else
-					MarkTimeSlot(t,scheduleObj.data[i].relationships.resource.data.id,scheduleObj.data[i].relationships.event.data.id,scheduleObj.data[i].relationships.event_instance.data.id);
-			}
-			
-		});
-
-	}
-
-	function MarkTimeSlot(time,resourceId, eventId,eventInstanceId)
-	{
-		var tdId = '#'+ time + '-' + resourceId;
-		//find previous cell and see if event id exists and is different, if different - change color
-		if (time>7){
-			var prevTdId = '#'+ (time-1) + '-' + resourceId;
-			var prevEventId=$(prevTdId).attr("event-id");
-			if (prevEventId && prevEventId != eventId){
-				var prevColor = $(prevTdId).css("background-color");
-				busyColor = (prevColor=='rgba(252, 225, 220, 0.9)'?'rgba(252, 237, 220, 0.9)':'rgba(252, 225, 220, 0.9)');
-			}
-		}
-		$(tdId).css("background-color",busyColor);
-		$(tdId).css("cursor","pointer");
-		$(tdId).attr("event-id",eventId);
-		$(tdId).attr("onMouseOver","ShowInfo(this)");
-		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
-		$(tdId).attr("onClick","window.open('https://calendar.planningcenteronline.com/events/"+eventId+"?event_instance_id="+eventInstanceId+"', '_blank').focus();");
-		eventIds.indexOf(eventId) === -1 ? eventIds.push(eventId) : console.log(eventId +" already exists in array"); 
-	}
-	function SetDate(dayIncrement)
-	{
-		var dateStr = $("#datepicker").val()
-		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
-		$("#datepicker").datepicker( "setDate" , addDays(dateOnly,dayIncrement));
-		RefreshCalendar();
-	}
-	function addDays(date, days) {
-	  var result = new Date(date);
-	  result.setTime(result.getTime() + 8*60*60*1000); //add 8 hours to compensate fot PST
-	  result.setDate(result.getDate() + days);
-	  return result;
-	}
-	function ShowInfo(parentElement) {
-		if ($('#divInfo').is(":hidden")){
-			//Populate div
-			var eId = $(parentElement).attr("event-id");
-			$('#divEventName').html(eventInfo[eId].eventName);
-			$('#divContactName').html(eventInfo[eId].ownerName + ' - ' + eventInfo[eId].phone);
-			//position and display div
-	        	var position = $(parentElement).offset();
-			var _top = position.top - 55 - window.scrollY;
-	        	$('#divInfo').css({ top: _top, left: position.left }).show()
-		}
+    <title>Kitchen Business Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f7f7f7;
         }
-	</script>
+        #calculatorContainer {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .quantity-input {
+            width: 100px;
+        }
+        .category-row {
+            background-color: #6c757d;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+        .row-total {
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Replace 'path/to/your/products.json' with the actual path to your JSON file
+            fetch('products.json')
+            .then(response => response.json())
+            .then(data => createProductTable(data))
+            .catch(error => console.error('Error:', error));
+        });
+
+        function createProductTable(data) {
+            let tableBody = document.getElementById('productTableBody');
+            data.categories.forEach(category => {
+                // Create category row
+                let catRow = tableBody.insertRow();
+                let catCell = catRow.insertCell();
+                catCell.setAttribute('colspan', 5);
+                catCell.innerText = category.name;
+                catRow.classList.add('category-row');
+
+                // Create product rows
+                category.products.forEach(product => {
+                    let row = tableBody.insertRow();
+                    let productCell = row.insertCell();
+                    productCell.setAttribute('colspan', 2);
+                    productCell.innerText = product.name;
+
+                    let priceCell = row.insertCell();
+                    priceCell.innerText = product.price.toFixed(2);
+
+                    let quantityCell = row.insertCell();
+                    quantityCell.innerHTML = `<input type="number" value="0" min="0" class="form-control quantity-input" onchange="calculateRowTotal(this)">`;
+
+                    let totalCell = row.insertCell();
+                    totalCell.classList.add('row-total');
+                    totalCell.innerText = '0.00';
+                });
+            });
+        }
+
+         function calculateRowTotal(element) {
+            var row = element.parentNode.parentNode;
+            var price = parseFloat(row.cells[1].innerText);
+            var quantity = parseFloat(row.cells[2].getElementsByTagName('input')[0].value);
+            var total = price * quantity;
+            row.cells[3].innerText = total.toFixed(2);
+
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            var grandTotal = 0;
+            var rows = document.querySelectorAll('#productTable tbody tr:not(.category-row)');
+            rows.forEach(function (row) {
+                var rowTotal = parseFloat(row.cells[3].innerText);
+                if (!isNaN(rowTotal)) {
+                    grandTotal += rowTotal;
+                }
+            });
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        }
+    </script>
 </head>
 <body>
-
-<div class="container">
-
-	<div class="text-center"><img src="https://www.brytechurch.org/wp-content/uploads/2018/11/cropped-LOGO-cropped.png" class="text-center" style="max-width:50%"/></div>
-	<h3 class="text-center p-3">Room Availability</h3>
-	<div class="card border-info">
-		<div class="card-header text-center pt-3 pb-3" style="font-size:1.5em;font-style:bold">
-			Date: 
-			<a href="#" onclick="SetDate(-1);return false;" style="text-decoration:none;position:relative;top:3px">&nbsp;<i class="fa-solid fa-chevron-left"></i>&nbsp;</a> 
-			<input class="form-control w-25" style="display:inline-block" type="text" id="datepicker"/>
-			<a href="#" onclick="SetDate(1);return false;" style="text-decoration:none;position:relative;top:3px">&nbsp;<i class="fa-solid fa-chevron-right"></i></a> 
-		</div>
-		<div class="card-body">
-			
-			<div id="divMain" class="text-center">
-			</div>
-		</div>
-	</div>
-	
-</div>
-	<div id="divInfo" style="border:1px solid #555;border-radius:3px;width:fit-content;background-color:#eee;padding:5px;font-size:0.8em;display:none;position:fixed">
-		<div id="divEventName" style="font-weight:bold">Event Name</div>
-		<div id="divContactName">John Doe - 916-333-2222</div>
-	</div>
-<a href="#" id="externalLink">Edit</a>
+    <div id="calculatorContainer">
+        <h2 class="text-center">Kitchen Business Calculator</h2>
+        <table id="productTable" class="table">
+            <thead class="thead-light">
+                <tr>
+                    <th colspan="2">Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                <!-- Products will be loaded here -->
+            </tbody>
+        </table>
+        <h3 class="text-right">Total: <span id="grandTotal">0.00</span></h3>
+    </div>
+    
 </body>
 </html>
