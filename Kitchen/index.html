@@ -46,12 +46,14 @@
         function AddOne(element){
             var input = element.previousElementSibling;
             input.value = parseInt(input.value) + 1; 
+            calculateRowTotal(input);
         }
         
         function SubOne(element){
             var input = element.nextElementSibling;
             if (parseInt(input.value) > 1)
                 input.value = parseInt(input.value) - 1; 
+            calculateRowTotal(input);
         }
         
         function createProductTable(data) {
@@ -75,7 +77,7 @@
                     priceCell.innerText = product.price.toFixed(2);
 
                     let quantityCell = row.insertCell();
-                    quantityCell.innerHTML = `<div class="row"><i class="far fa-minus-square" style="font-size:1.5em" onclick="SubOne(this)"></i><input type="number" value="0" min="0" class="form-control" style="width:40px" onchange="calculateRowTotal(this)"><i class="far fa-plus-square" style="font-size:1.5em" onclick="AddOne(this)"></i></div>`;
+                    quantityCell.innerHTML = `<div class="row"><i class="far fa-minus-square" style="font-size:1.8em" onclick="SubOne(this)"></i><input type="number" value="0" min="0" class="form-control" style="width:65px" onchange="calculateRowTotal(this)"><i class="far fa-plus-square" style="font-size:1.8em" onclick="AddOne(this)"></i></div>`;
 
                     let totalCell = row.insertCell();
                     totalCell.classList.add('row-total');
