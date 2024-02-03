@@ -1,0 +1,48 @@
+{
+    "categories": [
+        {
+            "name": "Category test",
+            "products": [
+                {
+                    "name": "Product 1.1",
+                    "price": 11.1
+                },
+                {
+                    "name": "Product 1.2",
+                    "price": 12.5
+                },
+                {
+                    "name": "Product 1.5",
+                    "price": 24.5
+                }
+
+            ]
+        },
+        {
+            "name": "Category 2",
+            "products": [
+                {
+                    "name": "Product 2.1",
+                    "price": 5.5
+                },
+                {
+                    "name": "Product 2.2",
+                    "price": 7
+                }
+            ]
+        },
+        {
+            "name": "Category 3",
+            "products": [
+                {
+                    "name": "Product 3.1",
+                    "price": 15
+                },
+                {
+                    "name": "Product 3.2",
+                    "price": 11.75
+                }
+            ]
+        }
+    ]
+}
