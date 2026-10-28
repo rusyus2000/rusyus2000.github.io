@@ -1,5 +1,8 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Bryte Church - Room Schedule</title>
 	<script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity3="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
@@ -7,6 +10,7 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 	<link href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css' rel='stylesheet'>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+	<link rel="stylesheet" href="calendar.css">
 
 
 	<script>
@@ -16,6 +20,8 @@
 	var eventIds = [];
 	var eventInfo = {};
 	var busyColor = 'rgba(252, 225, 220, 0.9)';
+	var eventRequestFormUrl = 'https://bryte.churchcenter.com/calendar/forms/23823';
+	var eventRequestSlot = null;
 
 	$(function(){
 		//if page is accessed by reload (f5) redirect to new page. this is needed becuase old parameter 'code' cannot be reused
@@ -26,8 +32,10 @@
 		const urlParams = new URLSearchParams(queryString);
 		return_code = urlParams.get('code');
 
-		if (!t_n && !return_code)
+		if (!t_n && !return_code){
 			window.location="https://api.planningcenteronline.com/oauth/authorize?client_id=4d16b452f211191a3a92d5f8579caef561dfd759148f1f096921c845ec97337d&redirect_uri=https://rusyus2000.github.io&response_type=code&scope=calendar";
+			return;
+		}
 		if(!t_n)
 			app_authenticate();
 
@@ -42,14 +50,7 @@
 		})
 		$("#datepicker").datepicker( "setDate" , new Date());
 
-		$("#externalLink").click(function(){
-			var newWindow = window.open("https://calendar.planningcenteronline.com/");
-			newWindow.onload = function() {
-    					$(newWindow.document.body).find("button[data-pendo='new-event-button']").click();
-				}
-		});
-
-
+		initializeEventRequest();
 		RefreshCalendar();
 
 	});
@@ -63,17 +64,21 @@
 	}
 	function AddEvent(event)
 	{
+		var owner = event.included && event.included[0] ? event.included[0].attributes : {};
+		var phones = owner.contact_data && owner.contact_data.phone_numbers || [];
 		eventInfo[event.data.id]={eventName:event.data.attributes.name,
-					  ownerName:event.included[0].attributes.first_name + ' ' + event.included[0].attributes.last_name,
-					  phone:event.included[0].attributes.contact_data.phone_numbers[0].number};
+					  ownerName:[owner.first_name, owner.last_name].filter(Boolean).join(' '),
+					  phone:phones.length ? phones[0].number : ''};
 	}
 	function RefreshCalendar()
 	{
+		closeEventRequest();
 		$("#divMain").LoadingOverlay("show", true);
 
 		eventIds = [];
 		var dateStr = $("#datepicker").val()
 		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
+		$("#selectedDay").text(parseDateString(dateOnly).toLocaleDateString("en-US", {weekday:"long", month:"long", day:"numeric", year:"numeric"}));
 		var nextDateOnly = addDaysToDateString(dateOnly, 1);
 		var daySchedule = ajax("https://api.planningcenteronline.com/calendar/v2/resource_bookings?order=starts_at&where[starts_at][lt]="+nextDateOnly+"&where[ends_at][gte]="+dateOnly,false,null)
 		var dayEvents = ajax("https://api.planningcenteronline.com/calendar/v2/event_instances?include=resource_bookings&order=starts_at&where[starts_at][lt]="+nextDateOnly+"&where[ends_at][gte]="+dateOnly,false,null)
@@ -136,10 +141,11 @@
 
 		$("#divMain").empty();
 
+		jQuery('<div>', {class:"schedule-scroll", tabindex:0, role:"region", "aria-label":"Room availability by hour"}).appendTo("#divMain");
 		jQuery('<table >',{
 			id: "tblCalendar",
-			style: "margin:auto"
-		}).appendTo("#divMain");
+			"aria-label": "Room availability"
+		}).appendTo(".schedule-scroll");
 
 		//first row
 		var th = jQuery('<tr>');
@@ -147,12 +153,12 @@
 		for (let i=6; i<=22; i++)
 		{
 			if (i==6){
-					var blanktd = jQuery('<td>');
+					var blanktd = jQuery('<th scope="col">').text("Room");
 					blanktd.appendTo(th);
 			}
 			else
 			{
-				var timetd = jQuery('<td class="fw-bold">');
+				var timetd = jQuery('<th scope="col">');
 				timetd.append('&nbsp;'+(i<=12?i:i-12)+(i<12?"am":"pm")+'&nbsp;');
 				timetd.appendTo(th);
 			}
@@ -167,13 +173,13 @@
 				|| roomsObj.data[j].id == 464821
 				|| roomsObj.data[j].id == 464240)
 			{
-				var tr = jQuery('<tr id="trSeparator'+roomsObj.data[j].id+'" style="background-color:#ddd">');
+				var tr = jQuery('<tr id="trSeparator'+roomsObj.data[j].id+'" class="room-separator">');
 				tr.appendTo("#tblCalendar");
-				var td=jQuery('<td>',{colspan:'17',style:'border:1px solid #ccc'});
+				var td=jQuery('<td>',{colspan:'17'});
 				td.appendTo(tr);
 			}
 
-			var tr = jQuery('<tr id="tr'+roomsObj.data[j].id+'" onMouseOver="$(this).css(\'background-color\',\'#e9f2f2\')" onMouseOut="$(this).css(\'background-color\',\'#FFF\')">');
+			var tr = jQuery('<tr id="tr'+roomsObj.data[j].id+'">');
 			tr.appendTo("#tblCalendar");
 
 
@@ -181,13 +187,13 @@
 			for (let i=6; i<=22; i++)
 			{
 				if (i==6){
-					var td = jQuery('<td class="fw-bold">');
-					td.append(roomsObj.data[j].attributes.name);
+					var td = jQuery('<th scope="row">');
+					td.text(roomsObj.data[j].attributes.name);
 					td.appendTo(tr);
 				}
 				else{
 					var td = jQuery('<td>',{
-						style:'border:1px solid #ccc',
+						class:'time-slot',
 						id:i+'-'+roomsObj.data[j].id
 						});
 					td.appendTo(tr);
@@ -230,28 +236,103 @@
 		return startA < endB && endA > startB;
 	}
 
+	function initializeEventRequest() {
+		$("#divMain").off("contextmenu.eventRequest").on("contextmenu.eventRequest", "#tblCalendar td.time-slot", function(e) {
+			if (this.hasAttribute("event-id")) return;
+			e.preventDefault();
+			closeEventRequest();
+			var date = $("#datepicker").val().split(",")[0];
+			var hour = Number(this.id.split("-")[0]);
+			var roomName = $(this).closest("tr").find("th[scope='row']").text();
+			eventRequestSlot = {date:date, hour:hour, cell:this};
+			$(this).addClass("request-selected");
+			$("#divInfo").hide();
+			$("#requestRoom").text(roomName);
+			$("#requestTime").text(parseDateString(date).toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"}) + " / " + formatSlotHour(hour) + " - " + formatSlotHour(hour + 1) + " PT");
+			var input = document.getElementById("requestEventName");
+			input.value = "";
+			input.setCustomValidity("");
+			var popup = document.getElementById("eventRequestPopup");
+			popup.hidden = false;
+			var bounds = popup.getBoundingClientRect();
+			popup.style.left = Math.max(8, Math.min(e.clientX, window.innerWidth - bounds.width - 8)) + "px";
+			popup.style.top = Math.max(8, Math.min(e.clientY + 8, window.innerHeight - bounds.height - 8)) + "px";
+			input.focus({preventScroll:true});
+		});
+		$("#eventRequestForm").off("submit.eventRequest").on("submit.eventRequest", function(e) {
+			e.preventDefault();
+			if (!eventRequestSlot) return;
+			var input = document.getElementById("requestEventName");
+			var name = input.value.trim();
+			input.setCustomValidity(name ? "" : "Enter an event name.");
+			if (!input.reportValidity()) return;
+			var url = new URL(eventRequestFormUrl);
+			url.searchParams.set("prefill", JSON.stringify({
+				event_name:name,
+				notes:name,
+				starts_at:churchSlotDateTime(eventRequestSlot.date, eventRequestSlot.hour),
+				ends_at:churchSlotDateTime(eventRequestSlot.date, eventRequestSlot.hour + 1)
+			}));
+			window.open(url.href, "_blank", "noopener,noreferrer");
+			closeEventRequest();
+		});
+		$("#requestEventName").off("input.eventRequest").on("input.eventRequest", function(){this.setCustomValidity("");});
+		$(document).off("pointerdown.eventRequest keydown.eventRequest")
+			.on("pointerdown.eventRequest", function(e){if (!$(e.target).closest("#eventRequestPopup").length) closeEventRequest();})
+			.on("keydown.eventRequest", function(e){
+				if (e.key === "Escape" && eventRequestSlot) {
+					e.preventDefault();
+					closeEventRequest(true);
+				}
+			});
+		window.removeEventListener("resize", dismissEventRequest);
+		window.addEventListener("resize", dismissEventRequest);
+	}
+
+	function dismissEventRequest() { closeEventRequest(); }
+
+	function closeEventRequest(restoreFocus) {
+		var cell = eventRequestSlot && eventRequestSlot.cell;
+		$("#eventRequestPopup").prop("hidden", true);
+		$(".request-selected").removeClass("request-selected");
+		eventRequestSlot = null;
+		if (restoreFocus && cell && cell.isConnected) {
+			cell.setAttribute("tabindex", "-1");
+			cell.focus({preventScroll:true});
+		}
+	}
+
+	function formatSlotHour(hour) {
+		return (hour % 12 || 12) + (hour < 12 ? " AM" : " PM");
+	}
+
+	function churchSlotDateTime(date, hour) {
+		// Visible hours are after Pacific daylight-saving transitions on the selected date.
+		var offset = new Intl.DateTimeFormat("en-US", {timeZone:"America/Los_Angeles", timeZoneName:"longOffset"})
+			.formatToParts(new Date(date + "T20:00:00Z")).find(function(part){return part.type === "timeZoneName";}).value.replace("GMT", "");
+		return date + "T" + String(hour).padStart(2, "0") + ":00:00" + offset;
+	}
+
 	function generateUnassignedEvents(eventsObj, scheduleObj, selectedDate)
 	{
 		var unassignedEvents = getUnassignedEvents(eventsObj, scheduleObj, selectedDate);
 
 		jQuery('<div>',{
 			id: "divUnassignedEvents",
-			class: "mt-4 text-start"
+			class: "church-events"
 		}).appendTo("#divMain");
 
-		jQuery('<h5>',{
-			class: "text-center"
-		}).text("All Church Events").appendTo("#divUnassignedEvents");
+		jQuery('<h2>').text("All Church Events").appendTo("#divUnassignedEvents");
 
 		if (!unassignedEvents.length){
 			jQuery('<div>',{
-				class: "text-center text-muted"
-			}).text("No all church events without rooms for this date.").appendTo("#divUnassignedEvents");
+				class: "empty-events"
+			}).text("No events without a room scheduled for this day.").appendTo("#divUnassignedEvents");
 			return;
 		}
 
 		var list = jQuery('<table>',{
-			class: "table table-sm table-bordered w-auto mx-auto"
+			class: "events-table"
 		}).appendTo("#divUnassignedEvents");
 
 		$.each(unassignedEvents,function(i,eventInstance){
@@ -265,7 +346,8 @@
 				class: "fw-bold"
 			}).text(formatEventTimeForDate(eventInstance, selectedDate)).appendTo(tr);
 
-			jQuery('<td>').text(eventInstance.attributes.name).appendTo(tr);
+			var eventCell = jQuery('<td>').appendTo(tr);
+			jQuery('<a>', {href:"https://calendar.planningcenteronline.com/events/"+eventId+"?event_instance_id="+eventInstance.id, target:"_blank", rel:"noopener"}).text(eventInstance.attributes.name).appendTo(eventCell);
 		});
 	}
 
@@ -327,13 +409,14 @@
 			var prevTdId = '#'+ (time-1) + '-' + resourceId;
 			var prevEventId=$(prevTdId).attr("event-id");
 			if (prevEventId && prevEventId != eventId){
-				var prevColor = $(prevTdId).css("background-color");
-				busyColor = (prevColor=='rgba(252, 225, 220, 0.9)'?'rgba(252, 237, 220, 0.9)':'rgba(252, 225, 220, 0.9)');
+				busyColor = ($(prevTdId).hasClass("booked-alternate")?'rgba(252, 225, 220, 0.9)':'rgba(252, 237, 220, 0.9)');
 			}
 		}
 		$(tdId).css("background-color",busyColor);
 		$(tdId).css("cursor","pointer");
 		$(tdId).attr("event-id",eventId);
+		$(tdId).addClass("booked").toggleClass("booked-alternate",busyColor === 'rgba(252, 237, 220, 0.9)').attr({tabindex:0, role:"link", "aria-label":"Booked room, " + (time<=12?time:time-12) + (time<12?" am":" pm")});
+		$(tdId).on("focus",function(){ShowInfo(this);}).on("blur",function(){$('#divInfo').hide();}).on("keydown",function(e){if(e.key === "Enter"){e.preventDefault();this.click();}});
 		$(tdId).attr("onMouseOver","ShowInfo(this)");
 		$(tdId).attr("onMouseOut","$('#divInfo').hide();");
 		$(tdId).attr("onClick","window.open('https://calendar.planningcenteronline.com/events/"+eventId+"?event_instance_id="+eventInstanceId+"', '_blank').focus();");
@@ -344,6 +427,10 @@
 		var dateStr = $("#datepicker").val()
 		var dateOnly = dateStr.substring(0, dateStr.indexOf(","));
 		$("#datepicker").datepicker( "setDate" , addDays(dateOnly,dayIncrement));
+		RefreshCalendar();
+	}
+	function GoToToday() {
+		$("#datepicker").datepicker("setDate", new Date());
 		RefreshCalendar();
 	}
 	function addDays(date, days) {
@@ -373,15 +460,20 @@
 		return {start:start, end:end};
 	}
 	function ShowInfo(parentElement) {
+		var info = eventInfo[$(parentElement).attr("event-id")];
+		if (!info) return;
 		if ($('#divInfo').is(":hidden")){
 			//Populate div
 			var eId = $(parentElement).attr("event-id");
-			$('#divEventName').html(eventInfo[eId].eventName);
-			$('#divContactName').html(eventInfo[eId].ownerName + ' - ' + eventInfo[eId].phone);
+			$('#divEventName').text(info.eventName);
+			$('#divContactName').text([info.ownerName, info.phone].filter(Boolean).join(' - '));
 			//position and display div
 	        	var position = $(parentElement).offset();
-			var _top = position.top - 55 - window.scrollY;
-	        	$('#divInfo').css({ top: _top, left: position.left }).show()
+			$('#divInfo').css({top:0, left:0}).show();
+			var tooltip = $('#divInfo')[0].getBoundingClientRect();
+			var _top = Math.max(8, position.top - window.scrollY - tooltip.height - 10);
+			var _left = Math.max(8, Math.min(position.left - window.scrollX, window.innerWidth - tooltip.width - 8));
+			$('#divInfo').css({ top: _top, left: _left });
 		}
         }
 	window.mobileCheck = function() {
@@ -393,31 +485,47 @@
 </head>
 <body>
 
-<div class="container-lg">
-
-	<div class="text-center"><img src="https://www.brytechurch.org/wp-content/uploads/2018/11/cropped-LOGO-cropped.png" class="text-center" style="max-width:50%"/></div>
-	<h3 class="text-center p-3">Room Availability</h3>
-	<div class="card border-info">
-		<div class="card-header text-center pt-3 pb-3" style="font-size:1.5em;font-style:bold">
-			Date:
-			<a href="#" onclick="SetDate(-1);return false;" style="text-decoration:none;position:relative;top:3px">&nbsp;<i class="fa-solid fa-chevron-left"></i>&nbsp;</a>
-			<input class="form-control w-25" style="display:inline-block" type="text" id="datepicker"/>
-			<a href="#" onclick="SetDate(1);return false;" style="text-decoration:none;position:relative;top:3px">&nbsp;<i class="fa-solid fa-chevron-right"></i></a>
+<header class="site-header">
+	<div class="header-inner">
+		<div class="church-brand">
+			<img src="https://www.brytechurch.org/wp-content/uploads/2018/11/cropped-LOGO-cropped.png" alt="" class="church-logo" onerror="this.hidden=true">
+			<span>Bryte Church</span>
 		</div>
-		<div class="card-body">
-
-			<div id="divMain" class="text-center">
+		<a href="https://calendar.planningcenteronline.com/" target="_blank" rel="noopener" id="externalLink" class="planning-link">Planning Center <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+	</div>
+</header>
+<main class="calendar-page">
+	<div class="page-heading">
+		<div><p class="eyebrow">CHURCH CALENDAR</p><h1>Room Availability</h1></div>
+		<div class="legend"><span><i class="legend-free" aria-hidden="true"></i>Available</span><span><i class="legend-booked" aria-hidden="true"></i>Booked</span></div>
+	</div>
+	<section class="schedule-section" aria-label="Daily schedule">
+		<div class="schedule-toolbar">
+			<h2 id="selectedDay" aria-live="polite">Daily Schedule</h2>
+			<div class="date-controls">
+				<button type="button" class="today-button" onclick="GoToToday()">Today</button>
+				<div class="date-navigation">
+					<button type="button" onclick="SetDate(-1)" aria-label="Previous day" title="Previous day"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+					<label class="date-field"><i class="fa-regular fa-calendar" aria-hidden="true"></i><input type="text" id="datepicker" aria-label="Choose date" readonly></label>
+					<button type="button" onclick="SetDate(1)" aria-label="Next day" title="Next day"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+				</div>
 			</div>
 		</div>
-	</div>
-
+		<div id="divMain"></div>
+	</section>
+	<footer class="page-footer"><span>Bryte Church</span><span>Pacific Time</span></footer>
+</main>
+<div id="divInfo" role="tooltip"><div id="divEventName"></div><div id="divContactName"></div></div>
+<div id="eventRequestPopup" class="event-request-popup" role="dialog" aria-labelledby="requestHeading" aria-describedby="requestRoom requestTime requestRoomNotice" hidden>
+	<form id="eventRequestForm">
+		<div class="request-heading"><h2 id="requestHeading">New event</h2><button type="button" class="request-close" onclick="closeEventRequest(true)" aria-label="Close new event" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+		<p id="requestRoom" class="request-room"></p>
+		<p id="requestTime" class="request-time"></p>
+		<label for="requestEventName">Event name</label>
+		<input type="text" id="requestEventName" name="eventName" maxlength="200" required autocomplete="off">
+		<p id="requestRoomNotice" class="request-notice">Select the room on the Planning Center form.</p>
+		<div class="request-actions"><button type="submit" class="request-continue">Continue <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button></div>
+	</form>
 </div>
-	<div id="divInfo" style="border:1px solid #555;border-radius:3px;width:fit-content;background-color:#eee;padding:5px;font-size:0.8em;display:none;position:fixed">
-		<div id="divEventName" style="font-weight:bold">Event Name</div>
-		<div id="divContactName">John Doe - 916-333-2222</div>
-	</div>
-<div class="text-center">
-<a href="#" id="externalLink">GO to Planning Center Calendar</a>
-	</div>
 </body>
 </html>
